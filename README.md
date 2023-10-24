@@ -1,6 +1,6 @@
 # JIRA Linker
 
-This is a simple plugin which add a jira linker command to the Obsidian (https://obsidian.md) markdown application.
+This is a simple plugin which adds a jira linker command to the Obsidian (https://obsidian.md) markdown application.
 
 ## How to use
 

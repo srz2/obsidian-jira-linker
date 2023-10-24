@@ -1,7 +1,7 @@
 {
 	"name": "jira-linker",
 	"version": "1.0.1",
-	"description": "This is a simple plugin which add a jira linker command",
+	"description": "This is a simple plugin which adds a jira linker command",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
