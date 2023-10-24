@@ -1,11 +1,11 @@
 {
 	"id": "jira-linker",
 	"name": "JIRA Linker",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"minAppVersion": "0.15.0",
 	"description": "This is a simple plugin which adds a jira linker command",
 	"author": "Steven Zilberberg",
-	"authorUrl": "https://github.com/srz2/obsidian-jira-linker",
+	"authorUrl": "stevenzilberberg.com",
 	"fundingUrl": "https://www.buymeacoffee.com/kvnfnpycl",
 	"isDesktopOnly": false
 }
