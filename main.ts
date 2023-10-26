@@ -27,22 +27,18 @@ export default class JiraLinkerPlugin extends Plugin {
 				// Check JIRA URL
 				if (jira_url == ''){
 					const msg = 'The JIRA URL has not been set in settings'
-					console.warn(msg)
 					new Notice(msg)
 					return;
 				}
 
 				// Check for content, ask for it if not selected
 				if (content == ''){
-					console.debug('No content given, giving input modal');
 					new JiraIssueInputModal(this.app, (result) => {
 						if (result !== ''){
-							console.debug('replace with user input', result)
 							editor.replaceSelection(`[${result}](${jira_url}/browse/${result})`);
 						}
 					}).open();
 				} else {
-					console.debug('Replacing with selection')
 					editor.replaceSelection(`[${content}](${jira_url}/browse/${content})`);
 				}
 			}
