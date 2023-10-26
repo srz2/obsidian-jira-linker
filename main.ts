@@ -2,16 +2,16 @@ import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Set
 
 // Remember to rename these classes and interfaces!
 
-interface MyPluginSettings {
+interface LocalSettings {
 	jira_instance_url: string;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
+const DEFAULT_SETTINGS: LocalSettings = {
 	jira_instance_url: ''
 }
 
 export default class JiraLinkerPlugin extends Plugin {
-	settings: MyPluginSettings;
+	settings: LocalSettings;
 
 	async onload() {
 		await this.loadSettings();
