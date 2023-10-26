@@ -3,7 +3,7 @@
 	"name": "JIRA Linker",
 	"version": "1.0.2",
 	"minAppVersion": "0.15.0",
-	"description": "This is a simple plugin which adds a jira linker command",
+	"description": "Quickly format a JIRA issue tag as a link to you JIRA instance.",
 	"author": "Steven Zilberberg",
 	"authorUrl": "stevenzilberberg.com",
 	"fundingUrl": "https://www.buymeacoffee.com/kvnfnpycl",
