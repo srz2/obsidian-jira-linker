@@ -18,7 +18,7 @@ export default class JiraLinkerPlugin extends Plugin {
 
 		// This adds an editor command that can perform some operation on the current editor instance
 		this.addCommand({
-			id: 'sample-editor-command',
+			id: 'cmd-link-jira-issue',
 			name: 'Link Jira Issue',
 			editorCallback: (editor: Editor, view: MarkdownView) => {
 				const jira_url = this.settings.jira_instance_url;
