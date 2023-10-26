@@ -73,8 +73,8 @@ class JiraIssueInputModal extends Modal {
 	onOpen() {
 		const { contentEl } = this;
 
-		contentEl.createEl("h1", { text: "Enter your JIRA Issue" });
-		contentEl.createEl("p", {text: 'Enter your jira issue which will then be appended to your jira url'})
+		contentEl.createEl("h1", { text: "Enter your Jira issue" });
+		contentEl.createEl("p", {text: 'Enter an issue number which will then be appended to your Jira instance url'})
 
 		new Setting(contentEl)
 		.setName("Jira Issue")
