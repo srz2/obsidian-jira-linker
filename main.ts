@@ -24,9 +24,9 @@ export default class JiraLinkerPlugin extends Plugin {
 				const jira_url = this.settings.jira_instance_url;
 				const content = editor.getSelection();
 
-				// Check JIRA URL
+				// Check Jira URL
 				if (jira_url == ''){
-					const msg = 'The JIRA URL has not been set in settings'
+					const msg = 'The Jira URL has not been set in settings'
 					new Notice(msg)
 					return;
 				}
@@ -115,9 +115,9 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Jira Instance URL')
-			.setDesc('The domain URL for your JIRA instance')
+			.setDesc('The domain URL for your Jira instance')
 			.addText(text => text
-				.setPlaceholder('JIRA URL')
+				.setPlaceholder('Jira URL')
 				.setValue(this.plugin.settings.jira_instance_url)
 				.onChange(async (value) => {
 					if (value.endsWith('/')) {
