@@ -4,10 +4,12 @@ import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Set
 
 interface LocalSettings {
 	jira_instance_url: string;
+	local_issue_path: string;
 }
 
 const DEFAULT_SETTINGS: LocalSettings = {
-	jira_instance_url: ''
+	jira_instance_url: '',
+	local_issue_path: ''
 }
 
 export default class JiraLinkerPlugin extends Plugin {
@@ -16,7 +18,7 @@ export default class JiraLinkerPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		// This adds an editor command that can perform some operation on the current editor instance
+		// This adds an editor command that can link a Jira issue to the local Jira instance
 		this.addCommand({
 			id: 'cmd-link-jira-issue',
 			name: 'Link Jira issue',
@@ -40,6 +42,24 @@ export default class JiraLinkerPlugin extends Plugin {
 					}).open();
 				} else {
 					editor.replaceSelection(`[${content}](${jira_url}/browse/${content})`);
+				}
+			}
+		});
+
+		// This adds an editor command that can link a Jira issue to a local issue _Info page
+		this.addCommand({
+			id: 'cmd-link-jira-issue-info',
+			name: 'Link Jira issue to info',
+			editorCallback: (editor: Editor, view: MarkdownView) => {
+				const local_issue_path = this.settings.local_issue_path;
+				const content = editor.getSelection();
+
+				if (content == ''){
+					// Do nothing
+					return;
+				} else {
+					// Replace content with local _Issue relative path
+					editor.replaceSelection(`[[${local_issue_path}/${content}/_Info|${content}]]`);
 				}
 			}
 		});
@@ -124,6 +144,20 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 						value = value.slice(0, -1);
 					}
 					this.plugin.settings.jira_instance_url = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Local Issue Path')
+			.setDesc('The relative path to your issue folder')
+			.addText(text => text
+				.setPlaceholder('Relative issue path')
+				.setValue(this.plugin.settings.local_issue_path)
+				.onChange(async (value) => {
+					if (value.endsWith('/')) {
+						value = value.slice(0, -1);
+					}
+					this.plugin.settings.local_issue_path = value;
 					await this.plugin.saveSettings();
 				}));
 	}
