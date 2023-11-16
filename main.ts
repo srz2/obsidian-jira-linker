@@ -134,8 +134,10 @@ class JiraIssueInputModal extends Modal {
 		this.onSubmit = onSubmit;
 		this.containerEl.addEventListener('keydown', (e) =>{
 			if (e.key === 'Enter') {
-				this.close();
-				this.onSubmit(this.result);
+				if (this.result !== undefined && this.result !== ''){
+					this.close();
+					this.onSubmit(this.result);
+				}
 			} else if (e.key == 'Escape') {
 				this.close();
 			}
