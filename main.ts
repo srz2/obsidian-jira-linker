@@ -54,6 +54,13 @@ export default class JiraLinkerPlugin extends Plugin {
 				const local_issue_path = this.settings.local_issue_path;
 				const content = editor.getSelection();
 
+				// Check local issue path
+				if (local_issue_path == ''){
+					const msg = 'The local issue path has not been set in settings'
+					new Notice(msg)
+					return;
+				}
+
 				if (content == ''){
 					new JiraIssueInputModal(this.app, (result) => {
 						if (result !== ''){
