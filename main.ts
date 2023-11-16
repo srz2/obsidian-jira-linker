@@ -55,8 +55,11 @@ export default class JiraLinkerPlugin extends Plugin {
 				const content = editor.getSelection();
 
 				if (content == ''){
-					// Do nothing
-					return;
+					new JiraIssueInputModal(this.app, (result) => {
+						if (result !== ''){
+							editor.replaceSelection(`[[${local_issue_path}/${result}/_Info|${result}]]`);
+						}
+					}).open();
 				} else {
 					// Replace content with local _Issue relative path
 					editor.replaceSelection(`[[${local_issue_path}/${content}/_Info|${content}]]`);
