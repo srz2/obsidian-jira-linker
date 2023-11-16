@@ -5,11 +5,13 @@ import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Set
 interface LocalSettings {
 	jira_instance_url: string;
 	local_issue_path: string;
+	local_issue_info_file: string;
 }
 
 const DEFAULT_SETTINGS: LocalSettings = {
 	jira_instance_url: '',
-	local_issue_path: ''
+	local_issue_path: '',
+	local_issue_info_file: '_Info'
 }
 
 export default class JiraLinkerPlugin extends Plugin {
@@ -52,6 +54,7 @@ export default class JiraLinkerPlugin extends Plugin {
 			name: 'Link Jira issue to info',
 			editorCallback: (editor: Editor, view: MarkdownView) => {
 				const local_issue_path = this.settings.local_issue_path;
+				const local_issue_main_file = this.settings.local_issue_info_file;
 				const content = editor.getSelection();
 
 				// Check local issue path
@@ -61,15 +64,22 @@ export default class JiraLinkerPlugin extends Plugin {
 					return;
 				}
 
+				// Check local issue main file
+				if (local_issue_main_file == ''){
+					const msg = 'The local issue main file has not been set in settings'
+					new Notice(msg)
+					return;
+				}
+
 				if (content == ''){
 					new JiraIssueInputModal(this.app, (result) => {
 						if (result !== ''){
-							editor.replaceSelection(`[[${local_issue_path}/${result}/_Info|${result}]]`);
+							editor.replaceSelection(`[[${local_issue_path}/${result}/${local_issue_main_file}|${result}]]`);
 						}
 					}).open();
 				} else {
 					// Replace content with local _Issue relative path
-					editor.replaceSelection(`[[${local_issue_path}/${content}/_Info|${content}]]`);
+					editor.replaceSelection(`[[${local_issue_path}/${content}/${local_issue_main_file}|${content}]]`);
 				}
 			}
 		});
@@ -170,5 +180,16 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 					this.plugin.settings.local_issue_path = value;
 					await this.plugin.saveSettings();
 				}));
+
+		new Setting(containerEl)
+				.setName('Local Issue Main File Name')
+				.setDesc('The "Main" file name for linking to local issues')
+				.addText(text => text
+					.setPlaceholder('Local Issue Main File')
+					.setValue(this.plugin.settings.local_issue_info_file)
+					.onChange(async (value) => {
+						this.plugin.settings.local_issue_info_file = value;
+						await this.plugin.saveSettings();
+					}));
 	}
 }
