@@ -1,7 +1,5 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
-// Remember to rename these classes and interfaces!
-
 interface LocalSettings {
 	jira_instance_url: string;
 	local_issue_path: string;
@@ -39,11 +37,13 @@ export default class JiraLinkerPlugin extends Plugin {
 				if (content == ''){
 					new JiraIssueInputModal(this.app, (result) => {
 						if (result !== ''){
-							editor.replaceSelection(`[${result}](${jira_url}/browse/${result})`);
+							const newStr = this.createWebUrl(jira_url, result)
+							editor.replaceSelection(newStr);
 						}
 					}).open();
 				} else {
-					editor.replaceSelection(`[${content}](${jira_url}/browse/${content})`);
+					const newStr = this.createWebUrl(jira_url, content)
+					editor.replaceSelection(newStr);
 				}
 			}
 		});
@@ -74,18 +74,42 @@ export default class JiraLinkerPlugin extends Plugin {
 				if (content == ''){
 					new JiraIssueInputModal(this.app, (result) => {
 						if (result !== ''){
-							editor.replaceSelection(`[[${local_issue_path}/${result}/${local_issue_main_file}|${result}]]`);
+							const newStr = this.createLocalUri(local_issue_path, result, local_issue_main_file)
+							editor.replaceSelection(newStr);
 						}
 					}).open();
 				} else {
 					// Replace content with local _Issue relative path
-					editor.replaceSelection(`[[${local_issue_path}/${content}/${local_issue_main_file}|${content}]]`);
+					const newStr = this.createLocalUri(local_issue_path, content, local_issue_main_file)
+					editor.replaceSelection(newStr);
 				}
 			}
 		});
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new JiraLinkerSettingTab(this.app, this));
+	}
+
+	/**
+	 * Create a URL for linking to Jira web instance
+	 * @param {string} url The Jira instance
+	 * @param {string} jira_issue The Jira issue number (e.g.: JIRA-123)
+	 * @returns {string} A fully formed markdown Url representing a Jira with the issue as a label
+	 */
+	createWebUrl(url: string, jira_issue: string): string {
+		const jira_url = this.settings.jira_instance_url;
+		return `[${jira_issue}](${jira_url}/browse/${jira_issue})`
+	}
+
+	/**
+	 * Create a Uri which points to a local file
+	 * @param {string} local_path The local path for the local issues in obsidian
+	 * @param {string} jira_issue The Jira issue number (e.g.: JIRA-123)
+	 * @param {string} main_file_name The name of the main file
+	 * @returns {string} A fully formed obsidian markdown Uri for referencing an issue
+	 */
+	createLocalUri(local_path: string, jira_issue: string, main_file_name: string) : string {
+		return `[[${local_path}/${jira_issue}/${main_file_name}|${jira_issue}]]`
 	}
 
 	onunload() {
