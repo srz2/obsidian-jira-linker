@@ -181,9 +181,18 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
+		// Create description for "Local Issue Main File Name" Setting
+		const settingMainFileNameDesc = document.createDocumentFragment();
+		settingMainFileNameDesc.append(
+			'The "Main" file name for linking to local issues (e.g.: ',
+			settingMainFileNameDesc.createEl('i', {
+				text: 'issues/JIRA-123/_Info'
+			}),
+			')'
+		)
 		new Setting(containerEl)
 				.setName('Local Issue Main File Name')
-				.setDesc('The "Main" file name for linking to local issues')
+				.setDesc(settingMainFileNameDesc)
 				.addText(text => text
 					.setPlaceholder('Local Issue Main File')
 					.setValue(this.plugin.settings.local_issue_info_file)
