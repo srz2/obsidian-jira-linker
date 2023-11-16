@@ -136,6 +136,8 @@ class JiraIssueInputModal extends Modal {
 			if (e.key === 'Enter') {
 				this.close();
 				this.onSubmit(this.result);
+			} else if (e.key == 'Escape') {
+				this.close();
 			}
 		});
 	}
