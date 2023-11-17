@@ -40,7 +40,9 @@ export default class JiraLinkerPlugin extends Plugin {
 							const newStr = this.createWebUrl(jira_url, result)
 							editor.replaceSelection(newStr);
 						}
-					}).open();
+					})
+					.setDescription('Enter an issue number which will then be appended to your Jira instance url')
+					.open();
 				} else {
 					const newStr = this.createWebUrl(jira_url, content)
 					editor.replaceSelection(newStr);
@@ -77,7 +79,9 @@ export default class JiraLinkerPlugin extends Plugin {
 							const newStr = this.createLocalUri(local_issue_path, result, local_issue_main_file)
 							editor.replaceSelection(newStr);
 						}
-					}).open();
+					})
+					.setDescription('Enter an issue number to be constructed into your local issue path')
+					.open();
 				} else {
 					// Replace content with local _Issue relative path
 					const newStr = this.createLocalUri(local_issue_path, content, local_issue_main_file)
@@ -126,11 +130,15 @@ export default class JiraLinkerPlugin extends Plugin {
 }
 
 class JiraIssueInputModal extends Modal {
+	title: string;
+	description: string;
 	result: string;
 	onSubmit: (result: string) => void;
 
 	constructor(app: App, onSubmit: (result: string) => void) {
 		super(app);
+		this.title = 'Enter your Jira issue';
+		this.description = 'Type in a jira issue number';
 		this.onSubmit = onSubmit;
 		this.containerEl.addEventListener('keydown', (e) =>{
 			if (e.key === 'Enter') {
@@ -144,11 +152,21 @@ class JiraIssueInputModal extends Modal {
 		});
 	}
 
+	setTitle(newTitle: string): JiraIssueInputModal {
+		this.title = newTitle;
+		return this;
+	}
+
+	setDescription(newDescription: string): JiraIssueInputModal {
+		this.description = newDescription;
+		return this;
+	}
+
 	onOpen() {
 		const { contentEl } = this;
 
-		contentEl.createEl("h1", { text: "Enter your Jira issue" });
-		contentEl.createEl("p", {text: 'Enter an issue number which will then be appended to your Jira instance url'})
+		contentEl.createEl("h1", { text: this.title });
+		contentEl.createEl("p", {text: this.description})
 
 		new Setting(contentEl)
 		.setName("Jira Issue")
