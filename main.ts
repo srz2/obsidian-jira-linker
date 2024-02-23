@@ -1,4 +1,7 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import {JiraInstanceSuggestModal} from 'Modals/JiraInstanceSuggestModal'
+import { JiraIssueInputModal } from 'Modals/JiraIssueInputModal';
+import { JiraInstanceUrl } from 'Models/JiraInstanceUrl';
 
 interface LocalSettings {
 	jira_instance_url: string;
@@ -142,69 +145,6 @@ export default class JiraLinkerPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-	}
-}
-
-class JiraIssueInputModal extends Modal {
-	title: string;
-	description: string;
-	result: string;
-	onSubmit: (result: string) => void;
-
-	constructor(app: App, onSubmit: (result: string) => void) {
-		super(app);
-		this.title = 'Enter your Jira issue';
-		this.description = 'Type in a jira issue number';
-		this.onSubmit = onSubmit;
-		this.containerEl.addEventListener('keydown', (e) =>{
-			if (e.key === 'Enter') {
-				if (this.result !== undefined && this.result !== ''){
-					this.close();
-					this.onSubmit(this.result);
-				}
-			} else if (e.key == 'Escape') {
-				this.close();
-			}
-		});
-	}
-
-	setTitle(newTitle: string): JiraIssueInputModal {
-		this.title = newTitle;
-		return this;
-	}
-
-	setDescription(newDescription: string): JiraIssueInputModal {
-		this.description = newDescription;
-		return this;
-	}
-
-	onOpen() {
-		const { contentEl } = this;
-
-		contentEl.createEl("h1", { text: this.title });
-		contentEl.createEl("p", {text: this.description})
-
-		new Setting(contentEl)
-		.setName("Jira Issue")
-		.addText((text) =>
-			text.onChange((value) => {
-			this.result = value
-			}));
-
-		new Setting(contentEl)
-		.addButton((btn) =>
-			btn
-			.setButtonText("Link Issue")
-			.setCta()
-			.onClick(() => {
-				this.close();
-				this.onSubmit(this.result);
-			}));
-	}
-
-	onClose() {
-		const { contentEl } = this;
-		contentEl.empty();
 	}
 }
 
