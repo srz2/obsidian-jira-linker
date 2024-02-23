@@ -2,12 +2,14 @@ import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Set
 
 interface LocalSettings {
 	jira_instance_url: string;
+	jira_instance_urls: JiraInstanceUrl[];
 	local_issue_path: string;
 	local_issue_info_file: string;
 }
 
 const DEFAULT_SETTINGS: LocalSettings = {
 	jira_instance_url: '',
+	jira_instance_urls: [],
 	local_issue_path: '',
 	local_issue_info_file: '_Info'
 }
@@ -22,30 +24,18 @@ export default class JiraLinkerPlugin extends Plugin {
 		this.addCommand({
 			id: 'cmd-link-jira-issue',
 			name: 'Link Jira issue',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				const jira_url = this.settings.jira_instance_url;
-				const content = editor.getSelection();
-
-				// Check Jira URL
-				if (jira_url == ''){
-					const msg = 'The Jira URL has not been set in settings'
-					new Notice(msg)
-					return;
-				}
-
-				// Check for content, ask for it if not selected
-				if (content == ''){
-					new JiraIssueInputModal(this.app, (result) => {
-						if (result !== ''){
-							const newStr = this.createWebUrl(jira_url, result)
-							editor.replaceSelection(newStr);
-						}
+			editorCallback: async (editor: Editor, view: MarkdownView) => {
+				if (this.settings.jira_instance_urls.length > 1) {
+					// Get suggestion
+					new JiraInstanceSuggestModal(this.app, this.settings.jira_instance_urls, (instance) => {
+						this.insertJiraLink(instance.Url, editor)
 					})
-					.setDescription('Enter an issue number which will then be appended to your Jira instance url')
-					.open();
+					.open()
 				} else {
-					const newStr = this.createWebUrl(jira_url, content)
-					editor.replaceSelection(newStr);
+					this.insertJiraLink(this.settings.jira_instance_urls[0].Url, editor)
+				}
+			}
+		});
 				}
 			}
 		});
@@ -92,6 +82,32 @@ export default class JiraLinkerPlugin extends Plugin {
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new JiraLinkerSettingTab(this.app, this));
+	}
+
+	insertJiraLink(jira_url: string, editor: Editor){
+		// Check Jira URL
+		if (jira_url == ''){
+			const msg = 'The Jira URL has not been set in settings'
+			new Notice(msg)
+			return;
+		}
+
+		const content = editor.getSelection();
+
+		// Check for content, ask for it if not selected
+		if (content == ''){
+			new JiraIssueInputModal(this.app, (result) => {
+				if (result !== ''){
+					const newStr = this.createWebUrl(jira_url, result)
+					editor.replaceSelection(newStr);
+				}
+			})
+			.setDescription('Enter an issue number which will then be appended to your Jira instance url')
+			.open();
+		} else {
+			const newStr = this.createWebUrl(jira_url, content)
+			editor.replaceSelection(newStr);
+		}
 	}
 
 	/**
