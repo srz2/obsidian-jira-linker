@@ -6,3 +6,19 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+.jira_instance_title {
+	font-size: 18px;
+	margin: 0;
+	padding: 0;
+	color: rgb(172, 170, 170);
+}
+
+.jira_instance_url {
+	font-size: 14px;
+	margin: 0;
+	padding: 0;
+	color: gray;
+	margin-left: 12px;
+	font-style: italic;
+}
