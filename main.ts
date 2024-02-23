@@ -221,20 +221,92 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		new Setting(containerEl)
-			.setName('Jira Instance URL')
-			.setDesc('The domain URL for your Jira instance')
-			.addText(text => text
-				.setPlaceholder('Jira URL')
-				.setValue(this.plugin.settings.jira_instance_url)
-				.onChange(async (value) => {
-					if (value.endsWith('/')) {
-						value = value.slice(0, -1);
-					}
-					this.plugin.settings.jira_instance_url = value;
-					await this.plugin.saveSettings();
-				}));
+		this.add_jira_instance_settings(containerEl);
+		this.add_jira_local_issue_settings(containerEl);
+	}
 
+	add_jira_instance_settings(containerEl : HTMLElement) {
+		new Setting(containerEl)
+			.setName('Jira Instances')
+			.setDesc('The domain URL for your Jira instances')
+
+		this.plugin.settings.jira_instance_urls.forEach((url, index) => {
+			const s = new Setting(containerEl)
+
+				// Conditionally add Default button
+				if (!this.plugin.settings.jira_instance_urls[index].IsDefault){
+					s.addButton((cb) => {
+						cb.setButtonText("Set Default")
+						cb.onClick(cb => {
+							for (let c = 0; c < this.plugin.settings.jira_instance_urls.length; c++){
+								this.plugin.settings.jira_instance_urls[c].IsDefault = false;
+							}
+							this.plugin.settings.jira_instance_urls[index].IsDefault = true;
+							this.plugin.saveSettings();
+							this.display();
+						})
+					})
+				} else {
+					s.addButton((cb) => {
+						cb.setButtonText('Unassign Default')
+						cb.buttonEl.className = 'assigned-default-button';
+						cb.onClick(cb => {
+							this.plugin.settings.jira_instance_urls[index].IsDefault = false;
+							this.plugin.saveSettings();
+							this.display();
+						})
+					})
+				}
+
+				s.addText((cb) => {
+					cb.setPlaceholder('Add an optional title')
+					cb.onChange(async (value) => {
+						if (value === '') {
+							value = `Instance ${index}`
+						}
+						this.plugin.settings.jira_instance_urls[index].Title = value
+					})
+				})
+				.addSearch((cb) => {
+					cb.setPlaceholder('Example: https://myinstance.atlassian.net')
+					cb.setValue(this.plugin.settings.jira_instance_urls[index].Url);
+					cb.onChange(async (value) => {
+						if (value.endsWith('/')) {
+							value = value.slice(0, -1);
+						}
+						this.plugin.settings.jira_instance_urls[index].Url = value
+						await this.plugin.saveSettings();
+					})
+				})
+				.addExtraButton((cb) => {
+					cb.setIcon('cross')
+						.setTooltip('delete instance')
+						.onClick(() => {
+							this.plugin.settings.jira_instance_urls.splice(index, 1);
+							this.plugin.saveSettings();
+							// Force refresh display
+							this.display();
+						})
+				})
+		})
+		
+		new Setting(containerEl).addButton((cb) => {
+			cb.setButtonText("Add new Jira instance")
+				.setCta()
+				.onClick(() => {
+					this.plugin.settings.jira_instance_urls.push({
+						Title: '',
+						IsDefault: false,
+						Url: ''
+					});
+					this.plugin.saveSettings();
+					// // Force refresh
+					this.display();
+				});
+		});
+	}
+
+	add_jira_local_issue_settings(containerEl: HTMLElement) : void {
 		new Setting(containerEl)
 			.setName('Local Issue Path')
 			.setDesc('The relative path to your issue folder')
