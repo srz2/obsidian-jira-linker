@@ -231,6 +231,7 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 
 				s.addText((cb) => {
 					cb.setPlaceholder('Add an optional title')
+					cb.setValue(this.plugin.settings.jira_instance_urls[index].Title)
 					cb.onChange(async (value) => {
 						if (value === '') {
 							value = `Instance ${index}`
