@@ -42,10 +42,11 @@ export default class JiraLinkerPlugin extends Plugin {
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 				if (this.settings.jira_instance_urls.length > 1) {
 					// Get suggestion
-					new JiraInstanceSuggestModal(this.app, this.settings.jira_instance_urls, (instance) => {
+					const suggestor = new JiraInstanceSuggestModal(this.app, this.settings.jira_instance_urls, (instance) => {
 						this.insertJiraLink(instance.Url, editor)
 					})
-					.open()
+					suggestor.setPlaceholder('Select a Jira instance')
+					suggestor.open()
 				} else {
 					const instanceUrl = this.settings.jira_instance_urls.length == 0 ? "" : this.settings.jira_instance_urls[0].Url;
 					this.insertJiraLink(instanceUrl, editor);
