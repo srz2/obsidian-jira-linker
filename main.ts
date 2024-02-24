@@ -45,9 +45,15 @@ export default class JiraLinkerPlugin extends Plugin {
 			id: 'cmd-link-jira-issue-default-instance',
 			name: 'Link Jira issue (default instance)',
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
+				let didInsert = false;
 				for(const item in this.settings.jira_instance_urls){
 					this.insertJiraLink(item, editor)
+					didInsert = true;
 					break;
+				}
+
+				if (!didInsert){
+					this.insertJiraLink(this.settings.jira_instance_urls[0].Url, editor)
 				}
 			}
 		});
