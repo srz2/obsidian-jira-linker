@@ -1,6 +1,6 @@
 # Jira Linker
 
-This is a [Obsidian](https://obsidian.md) plugin enables the ability to quickly add either:
+This is an [Obsidian](https://obsidian.md) plugin enables the ability to quickly add:
  - A web based url for a Jira issue
  - A local based uri for a local folder for an issue
 
@@ -11,7 +11,11 @@ This will link to a Jira instance a given Jira Issue
 
 Note: The *Jira Instance URL* must be set
 
-2. **Link Jira issue to info**
+2. **Link Jira issue (default instance)**
+
+This will link to the default Jira instance of a given Jira Issue
+
+3. **Link Jira issue to info**
 
 This will link to a local file for a given Jira Issue. If the path does not exist, it will be created
 
