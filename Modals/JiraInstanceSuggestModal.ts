@@ -5,13 +5,29 @@ export class JiraInstanceSuggestModal extends SuggestModal<IJiraInstanceUrl> {
 	items: IJiraInstanceUrl[]
 	onSubmit: (result: IJiraInstanceUrl) => void;
 
+	/**
+	 * @private
+	 */
+	untitledInstanceCounter = 0;
+
 	constructor(app: App, items: IJiraInstanceUrl[], onSubmit: (result: IJiraInstanceUrl) => void){
 		super(app)
 		this.items = items;
 		this.onSubmit = onSubmit;
+		this.inputEl.addEventListener('keydown', () => {
+			this.untitledInstanceCounter = 0;
+		})
 	}
 	getSuggestions(query: string): IJiraInstanceUrl[] | Promise<IJiraInstanceUrl[]> {
-		return this.items;
+		return this.items.map(x => {
+			return (
+				{
+					IsDefault: x.IsDefault,
+					Url: x.Url,
+					Title: x.Title === '' ? `Instance ${(this.untitledInstanceCounter++)}` : x.Title
+				}
+			)
+		});
 	}
 	renderSuggestion(value: IJiraInstanceUrl, el: HTMLElement) {
 		const div = el.createDiv()
