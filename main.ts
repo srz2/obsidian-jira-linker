@@ -47,7 +47,8 @@ export default class JiraLinkerPlugin extends Plugin {
 					})
 					.open()
 				} else {
-					this.insertJiraLink(this.settings.jira_instance_urls[0].Url, editor)
+					const instanceUrl = this.settings.jira_instance_urls.length == 0 ? "" : this.settings.jira_instance_urls[0].Url;
+					this.insertJiraLink(instanceUrl, editor);
 				}
 			}
 		});
