@@ -19,7 +19,8 @@ export class JiraInstanceSuggestModal extends SuggestModal<IJiraInstanceUrl> {
 		})
 	}
 	getSuggestions(query: string): IJiraInstanceUrl[] | Promise<IJiraInstanceUrl[]> {
-		return this.items.map(x => {
+		// Create new items to ensure instance titles are filled
+		const newItems = this.items.map(x => {
 			return (
 				{
 					IsDefault: x.IsDefault,
@@ -27,7 +28,13 @@ export class JiraInstanceSuggestModal extends SuggestModal<IJiraInstanceUrl> {
 					Title: x.Title === '' ? `Instance ${(this.untitledInstanceCounter++)}` : x.Title
 				}
 			)
-		});
+		})
+		
+		// Filter based on input
+		return newItems.filter(x => 
+			x.Title.toLowerCase().contains(query.toLowerCase()) || 
+			x.Url.toLowerCase().contains(query.toLowerCase())
+		);
 	}
 	renderSuggestion(value: IJiraInstanceUrl, el: HTMLElement) {
 		const div = el.createDiv()
