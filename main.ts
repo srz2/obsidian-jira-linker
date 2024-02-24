@@ -31,6 +31,7 @@ export default class JiraLinkerPlugin extends Plugin {
 		// this will load it to the array list
 		if (this.settings.jira_instance_url !== ''){
 			this.settings.jira_instance_urls.push({IsDefault: false, Title: '', Url: this.settings.jira_instance_url})
+			this.settings.jira_instance_url = ''
 			await this.saveSettings();
 		}
 
