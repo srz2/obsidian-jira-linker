@@ -1,11 +1,11 @@
 import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import {JiraInstanceSuggestModal} from 'Modals/JiraInstanceSuggestModal'
 import { JiraIssueInputModal } from 'Modals/JiraIssueInputModal';
-import { JiraInstanceUrl } from 'Models/JiraInstanceUrl';
+import { IJiraInstanceUrl } from 'Models/JiraInstanceUrl';
 
 interface LocalSettings {
 	jira_instance_url: string;
-	jira_instance_urls: JiraInstanceUrl[];
+	jira_instance_urls: IJiraInstanceUrl[];
 	local_issue_path: string;
 	local_issue_info_file: string;
 }
