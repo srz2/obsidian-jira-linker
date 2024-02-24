@@ -58,8 +58,35 @@ export default class JiraLinkerPlugin extends Plugin {
 			id: 'cmd-link-jira-issue-default-instance',
 			name: 'Link Jira issue (default instance)',
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
-				const defaultInstance = this.settings.jira_instance_urls.find(x => x.IsDefault) ?? this.settings.jira_instance_urls[0];
-				this.insertJiraLink(defaultInstance.Url, editor)
+				// Check if no instances exists
+				if (this.settings.jira_instance_urls.length == 0) {
+					this.insertJiraLink("", editor);
+				} else {
+					// Find the default instance
+					let foundIndex = -1;
+					const defaultInstance = this.settings.jira_instance_urls.find((x, index, instance) => {
+						// Record index if found
+						const condition = x.IsDefault
+						if (condition){
+							foundIndex = index
+						}
+						return condition
+					})
+					// If no defeault instance found, use the first listed instance
+					?? this.settings.jira_instance_urls[0];					
+
+					// If no default is found, alert the user
+					if (foundIndex == -1){
+						new Notice(`No default Jira Instance configured, using the first instance available: ${
+																												this.settings.jira_instance_urls[0].Title !== "" ?
+																												this.settings.jira_instance_urls[0].Title :
+																												this.settings.jira_instance_urls[0].Url
+																											}`)
+					}
+
+					// Execute the Jira Link on the default instance
+					this.insertJiraLink(defaultInstance.Url, editor)
+				}
 			}
 		});
 
