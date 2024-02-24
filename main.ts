@@ -196,7 +196,7 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 				// Conditionally add Default button
 				if (!this.plugin.settings.jira_instance_urls[index].IsDefault){
 					s.addButton((cb) => {
-						cb.setButtonText("Set Default")
+						cb.setButtonText("Unassign")
 						cb.onClick(cb => {
 							for (let c = 0; c < this.plugin.settings.jira_instance_urls.length; c++){
 								this.plugin.settings.jira_instance_urls[c].IsDefault = false;
@@ -208,7 +208,7 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 					})
 				} else {
 					s.addButton((cb) => {
-						cb.setButtonText('Unassign Default')
+						cb.setButtonText('Default')
 						cb.buttonEl.className = 'assigned-default-button';
 						cb.onClick(cb => {
 							this.plugin.settings.jira_instance_urls[index].IsDefault = false;

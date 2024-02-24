@@ -30,3 +30,8 @@ If your plugin does not need CSS, delete this file.
 	margin-left: 12px;
 	font-style: italic;
 }
+
+.assigned-default-button {
+	color:rgb(127, 83, 243);
+}
+
