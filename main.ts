@@ -219,6 +219,7 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 							value = `Instance ${index}`
 						}
 						this.plugin.settings.jira_instance_urls[index].Title = value
+						await this.plugin.saveSettings();
 					})
 				})
 				.addText((cb) => {
@@ -236,9 +237,9 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 				.addExtraButton((cb) => {
 					cb.setIcon('cross')
 						.setTooltip('delete instance')
-						.onClick(() => {
+						.onClick(async () => {
 							this.plugin.settings.jira_instance_urls.splice(index, 1);
-							this.plugin.saveSettings();
+							await this.plugin.saveSettings();
 							// Force refresh display
 							this.display();
 						})
@@ -248,13 +249,13 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 		new Setting(containerEl).addButton((cb) => {
 			cb.setButtonText("Add new Jira instance")
 				.setCta()
-				.onClick(() => {
+				.onClick(async () => {
 					this.plugin.settings.jira_instance_urls.push({
 						Title: '',
 						IsDefault: false,
 						Url: ''
 					});
-					this.plugin.saveSettings();
+					await this.plugin.saveSettings();
 					// // Force refresh
 					this.display();
 				});
