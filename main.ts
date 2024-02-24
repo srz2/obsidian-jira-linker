@@ -238,7 +238,7 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 				// Conditionally add Default button
 				if (!this.plugin.settings.jira_instance_urls[index].IsDefault){
 					s.addButton((cb) => {
-						cb.setButtonText("Unassign")
+						cb.setButtonText("Set As Default")
 						cb.onClick(cb => {
 							for (let c = 0; c < this.plugin.settings.jira_instance_urls.length; c++){
 								this.plugin.settings.jira_instance_urls[c].IsDefault = false;
