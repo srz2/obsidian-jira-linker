@@ -192,9 +192,20 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 	}
 
 	add_jira_instance_settings(containerEl : HTMLElement) {
+
+		const desc = document.createDocumentFragment();
+		const content = document.createElement('div')
+		content.innerHTML = `
+		<p>The list of domain URLs for your Jira instances</p>
+		<p>Denote your default instance but selecting the button. If <span style="text-decoration: underline;">no default is selected</span>, the <strong>first</strong> instance will be used</p>
+		</br>
+		<em>Note: A title is optional for your instances, but recommended for organization.</em>
+		`
+		desc.append(content)
+
 		new Setting(containerEl)
 			.setName('Jira Instances')
-			.setDesc('The domain URL for your Jira instances')
+			.setDesc(desc)
 
 		this.plugin.settings.jira_instance_urls.forEach((url, index) => {
 			const s = new Setting(containerEl);
