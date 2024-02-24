@@ -11,6 +11,10 @@ interface LocalSettings {
 }
 
 const DEFAULT_SETTINGS: LocalSettings = {
+	/**
+	 * @deprecated In version 1.0.X, this only supported one url,
+	 * instead, use the jira_instance_urls array instead
+	 */
 	jira_instance_url: '',
 	jira_instance_urls: [],
 	local_issue_path: '',
@@ -22,6 +26,13 @@ export default class JiraLinkerPlugin extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
+
+		// Handling for if user used older versions containing only one url instance
+		// this will load it to the array list
+		if (this.settings.jira_instance_url !== ''){
+			this.settings.jira_instance_urls.push({IsDefault: false, Title: '', Url: this.settings.jira_instance_url})
+			await this.saveSettings();
+		}
 
 		// This adds an editor command that can link a Jira issue to the local Jira instance
 		this.addCommand({
