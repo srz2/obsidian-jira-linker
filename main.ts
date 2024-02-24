@@ -145,8 +145,7 @@ export default class JiraLinkerPlugin extends Plugin {
 	 * @param {string} jira_issue The Jira issue number (e.g.: JIRA-123)
 	 * @returns {string} A fully formed markdown Url representing a Jira with the issue as a label
 	 */
-	createWebUrl(url: string, jira_issue: string): string {
-		const jira_url = this.settings.jira_instance_url;
+	createWebUrl(jira_url: string, jira_issue: string): string {
 		return `[${jira_issue}](${jira_url}/browse/${jira_issue})`
 	}
 
