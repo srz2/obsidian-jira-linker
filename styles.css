@@ -7,6 +7,14 @@ If your plugin does not need CSS, delete this file.
 
 */
 
+.setting-item-info:empty {
+	display: none;
+}
+
+.setting_jira_instance_url {
+	width: 100%;
+}
+
 .jira_instance_title {
 	font-size: 18px;
 	margin: 0;

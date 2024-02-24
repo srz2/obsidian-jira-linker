@@ -39,6 +39,15 @@ export default class JiraLinkerPlugin extends Plugin {
 				}
 			}
 		});
+
+		// This adds an editor command that can link a Jira issue to the local Jira instance
+		this.addCommand({
+			id: 'cmd-link-jira-issue-default-instance',
+			name: 'Link Jira issue (default instance)',
+			editorCallback: async (editor: Editor, view: MarkdownView) => {
+				for(const item in this.settings.jira_instance_urls){
+					this.insertJiraLink(item, editor)
+					break;
 				}
 			}
 		});
@@ -171,7 +180,12 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 			.setDesc('The domain URL for your Jira instances')
 
 		this.plugin.settings.jira_instance_urls.forEach((url, index) => {
-			const s = new Setting(containerEl)
+			const s = new Setting(containerEl);
+			
+			// Remove the name and description since we aren't using them. This
+			// plus the css class `.setting-item-info:empty` will get us more space
+			s.nameEl.remove();
+			s.descEl.remove();
 
 				// Conditionally add Default button
 				if (!this.plugin.settings.jira_instance_urls[index].IsDefault){
@@ -207,7 +221,7 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 						this.plugin.settings.jira_instance_urls[index].Title = value
 					})
 				})
-				.addSearch((cb) => {
+				.addText((cb) => {
 					cb.setPlaceholder('Example: https://myinstance.atlassian.net')
 					cb.setValue(this.plugin.settings.jira_instance_urls[index].Url);
 					cb.onChange(async (value) => {
@@ -217,6 +231,7 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 						this.plugin.settings.jira_instance_urls[index].Url = value
 						await this.plugin.saveSettings();
 					})
+					cb.inputEl.classList.add("setting_jira_instance_url")
 				})
 				.addExtraButton((cb) => {
 					cb.setIcon('cross')
