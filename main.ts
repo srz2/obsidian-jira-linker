@@ -24,16 +24,38 @@ const DEFAULT_SETTINGS: LocalSettings = {
 export default class JiraLinkerPlugin extends Plugin {
 	settings: LocalSettings;
 
-	async onload() {
-		await this.loadSettings();
-
-		// Handling for if user used older versions containing only one url instance
-		// this will load it to the array list
+	/**
+	 * Handling for if user used older versions containing only one url instance
+	 * this will load it to the array list.
+	 * 
+	 * See deprecation-notes for more info
+	 * 
+	 * @private
+	 */
+	async fixV1_2_0(){
 		if (this.settings.jira_instance_url !== ''){
 			this.settings.jira_instance_urls.push({IsDefault: false, Title: '', Url: this.settings.jira_instance_url})
 			this.settings.jira_instance_url = ''
 			await this.saveSettings();
 		}
+	}
+
+	/**
+	 * This contains migrations of data structures to allow older
+	 * versions to be upgraded to the current feature set
+	 * 
+	 * @private
+	 */
+	async applyVersionChanges(){
+		await this.fixV1_2_0()
+	}
+
+	async onload() {
+		await this.loadSettings();
+
+		// Do not remove, this is for updating
+		// legacy versions to the current feature set
+		await this.applyVersionChanges()
 
 		// This adds an editor command that can link a Jira issue to the local Jira instance
 		this.addCommand({
