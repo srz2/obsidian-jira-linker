@@ -1,13 +1,23 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import {JiraInstanceSuggestModal} from 'Modals/JiraInstanceSuggestModal'
+import { JiraIssueInputModal } from 'Modals/JiraIssueInputModal';
+import { IJiraInstanceUrl } from 'Models/JiraInstanceUrl';
 
 interface LocalSettings {
 	jira_instance_url: string;
+	jira_instance_urls: IJiraInstanceUrl[];
 	local_issue_path: string;
 	local_issue_info_file: string;
 }
 
 const DEFAULT_SETTINGS: LocalSettings = {
+	/**
+	 * @deprecated In version 1.0.X, this only supported one url,
+	 * instead, use the jira_instance_urls array instead
+	 * Refer to deprecation-notes for more info
+	 */
 	jira_instance_url: '',
+	jira_instance_urls: [],
 	local_issue_path: '',
 	local_issue_info_file: '_Info'
 }
@@ -15,37 +25,91 @@ const DEFAULT_SETTINGS: LocalSettings = {
 export default class JiraLinkerPlugin extends Plugin {
 	settings: LocalSettings;
 
+	/**
+	 * Handling for if user used older versions containing only one url instance
+	 * this will load it to the array list.
+	 * 
+	 * See deprecation-notes for more info
+	 * 
+	 * @private
+	 */
+	async fixV1_2_0(){
+		if (this.settings.jira_instance_url !== ''){
+			this.settings.jira_instance_urls.push({IsDefault: false, Title: '', Url: this.settings.jira_instance_url})
+			this.settings.jira_instance_url = ''
+			await this.saveSettings();
+		}
+	}
+
+	/**
+	 * This contains migrations of data structures to allow older
+	 * versions to be upgraded to the current feature set
+	 * 
+	 * @private
+	 */
+	async applyVersionChanges(){
+		await this.fixV1_2_0()
+	}
+
 	async onload() {
 		await this.loadSettings();
+
+		// Do not remove, this is for updating
+		// legacy versions to the current feature set
+		await this.applyVersionChanges()
 
 		// This adds an editor command that can link a Jira issue to the local Jira instance
 		this.addCommand({
 			id: 'cmd-link-jira-issue',
 			name: 'Link Jira issue',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				const jira_url = this.settings.jira_instance_url;
-				const content = editor.getSelection();
-
-				// Check Jira URL
-				if (jira_url == ''){
-					const msg = 'The Jira URL has not been set in settings'
-					new Notice(msg)
-					return;
-				}
-
-				// Check for content, ask for it if not selected
-				if (content == ''){
-					new JiraIssueInputModal(this.app, (result) => {
-						if (result !== ''){
-							const newStr = this.createWebUrl(jira_url, result)
-							editor.replaceSelection(newStr);
-						}
+			editorCallback: async (editor: Editor, view: MarkdownView) => {
+				if (this.settings.jira_instance_urls.length > 1) {
+					// Get suggestion
+					const suggestor = new JiraInstanceSuggestModal(this.app, this.settings.jira_instance_urls, (instance) => {
+						this.insertJiraLink(instance.Url, editor)
 					})
-					.setDescription('Enter an issue number which will then be appended to your Jira instance url')
-					.open();
+					suggestor.setPlaceholder('Select a Jira instance')
+					suggestor.open()
 				} else {
-					const newStr = this.createWebUrl(jira_url, content)
-					editor.replaceSelection(newStr);
+					const instanceUrl = this.settings.jira_instance_urls.length == 0 ? "" : this.settings.jira_instance_urls[0].Url;
+					this.insertJiraLink(instanceUrl, editor);
+				}
+			}
+		});
+
+		// This adds an editor command that can link a Jira issue to the local Jira instance
+		this.addCommand({
+			id: 'cmd-link-jira-issue-default-instance',
+			name: 'Link Jira issue (default instance)',
+			editorCallback: async (editor: Editor, view: MarkdownView) => {
+				// Check if no instances exists
+				if (this.settings.jira_instance_urls.length == 0) {
+					this.insertJiraLink("", editor);
+				} else {
+					// Find the default instance
+					let foundIndex = -1;
+					const defaultInstance = this.settings.jira_instance_urls.find((x, index, instance) => {
+						// Record index if found
+						const condition = x.IsDefault
+						if (condition){
+							foundIndex = index
+						}
+						return condition
+					})
+					// If no defeault instance found, use the first listed instance
+					?? this.settings.jira_instance_urls[0];					
+
+					// If no default is found, alert the user
+					if (foundIndex == -1){
+						new Notice(`No default Jira Instance configured, using the first instance available: ${
+																												this.settings.jira_instance_urls[0].Title !== "" ?
+																												this.settings.jira_instance_urls[0].Title :
+																												this.settings.jira_instance_urls[0].Url
+																											}`)
+					}
+
+					// Execute the Jira Link on the default instance
+					this.insertJiraLink(defaultInstance.Url, editor)
 				}
 			}
 		});
@@ -94,14 +158,39 @@ export default class JiraLinkerPlugin extends Plugin {
 		this.addSettingTab(new JiraLinkerSettingTab(this.app, this));
 	}
 
+	insertJiraLink(jira_url: string, editor: Editor){
+		// Check Jira URL
+		if (jira_url == ''){
+			const msg = 'The Jira URL has not been set in settings'
+			new Notice(msg)
+			return;
+		}
+
+		const content = editor.getSelection();
+
+		// Check for content, ask for it if not selected
+		if (content == ''){
+			new JiraIssueInputModal(this.app, (result) => {
+				if (result !== ''){
+					const newStr = this.createWebUrl(jira_url, result)
+					editor.replaceSelection(newStr);
+				}
+			})
+			.setDescription('Enter an issue number which will then be appended to your Jira instance url')
+			.open();
+		} else {
+			const newStr = this.createWebUrl(jira_url, content)
+			editor.replaceSelection(newStr);
+		}
+	}
+
 	/**
 	 * Create a URL for linking to Jira web instance
-	 * @param {string} url The Jira instance
+	 * @param {string} url The Jira instance url
 	 * @param {string} jira_issue The Jira issue number (e.g.: JIRA-123)
 	 * @returns {string} A fully formed markdown Url representing a Jira with the issue as a label
 	 */
-	createWebUrl(url: string, jira_issue: string): string {
-		const jira_url = this.settings.jira_instance_url;
+	createWebUrl(jira_url: string, jira_issue: string): string {
 		return `[${jira_issue}](${jira_url}/browse/${jira_issue})`
 	}
 
@@ -129,69 +218,6 @@ export default class JiraLinkerPlugin extends Plugin {
 	}
 }
 
-class JiraIssueInputModal extends Modal {
-	title: string;
-	description: string;
-	result: string;
-	onSubmit: (result: string) => void;
-
-	constructor(app: App, onSubmit: (result: string) => void) {
-		super(app);
-		this.title = 'Enter your Jira issue';
-		this.description = 'Type in a jira issue number';
-		this.onSubmit = onSubmit;
-		this.containerEl.addEventListener('keydown', (e) =>{
-			if (e.key === 'Enter') {
-				if (this.result !== undefined && this.result !== ''){
-					this.close();
-					this.onSubmit(this.result);
-				}
-			} else if (e.key == 'Escape') {
-				this.close();
-			}
-		});
-	}
-
-	setTitle(newTitle: string): JiraIssueInputModal {
-		this.title = newTitle;
-		return this;
-	}
-
-	setDescription(newDescription: string): JiraIssueInputModal {
-		this.description = newDescription;
-		return this;
-	}
-
-	onOpen() {
-		const { contentEl } = this;
-
-		contentEl.createEl("h1", { text: this.title });
-		contentEl.createEl("p", {text: this.description})
-
-		new Setting(contentEl)
-		.setName("Jira Issue")
-		.addText((text) =>
-			text.onChange((value) => {
-			this.result = value
-			}));
-
-		new Setting(contentEl)
-		.addButton((btn) =>
-			btn
-			.setButtonText("Link Issue")
-			.setCta()
-			.onClick(() => {
-				this.close();
-				this.onSubmit(this.result);
-			}));
-	}
-
-	onClose() {
-		const { contentEl } = this;
-		contentEl.empty();
-	}
-}
-
 class JiraLinkerSettingTab extends PluginSettingTab {
 	plugin: JiraLinkerPlugin;
 
@@ -205,20 +231,108 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		new Setting(containerEl)
-			.setName('Jira Instance URL')
-			.setDesc('The domain URL for your Jira instance')
-			.addText(text => text
-				.setPlaceholder('Jira URL')
-				.setValue(this.plugin.settings.jira_instance_url)
-				.onChange(async (value) => {
-					if (value.endsWith('/')) {
-						value = value.slice(0, -1);
-					}
-					this.plugin.settings.jira_instance_url = value;
-					await this.plugin.saveSettings();
-				}));
+		this.add_jira_instance_settings(containerEl);
+		this.add_jira_local_issue_settings(containerEl);
+	}
 
+	add_jira_instance_settings(containerEl : HTMLElement) {
+
+		const desc = document.createDocumentFragment();
+		const content = document.createElement('div')
+		content.innerHTML = `
+		<p>The list of domain URLs for your Jira instances</p>
+		<p>Denote your default instance by selecting the <strong>Set As Default</strong> button. If <span style="text-decoration: underline;">no default is selected</span>, the <strong>first</strong> instance will be used</p>
+		</br>
+		<em>Note: A title is optional for your instances, but recommended for organization.</em>
+		`
+		desc.append(content)
+
+		new Setting(containerEl)
+			.setName('Jira Instances')
+			.setDesc(desc)
+
+		this.plugin.settings.jira_instance_urls.forEach((url, index) => {
+			const s = new Setting(containerEl);
+			
+			// Remove the name and description since we aren't using them. This
+			// plus the css class `.setting-item-info:empty` will get us more space
+			s.nameEl.remove();
+			s.descEl.remove();
+
+				// Conditionally add Default button
+				if (!this.plugin.settings.jira_instance_urls[index].IsDefault){
+					s.addButton((cb) => {
+						cb.setButtonText("Set As Default")
+						cb.onClick(cb => {
+							for (let c = 0; c < this.plugin.settings.jira_instance_urls.length; c++){
+								this.plugin.settings.jira_instance_urls[c].IsDefault = false;
+							}
+							this.plugin.settings.jira_instance_urls[index].IsDefault = true;
+							this.plugin.saveSettings();
+							this.display();
+						})
+					})
+				} else {
+					s.addButton((cb) => {
+						cb.setButtonText('Default')
+						cb.buttonEl.className = 'assigned-default-button';
+						cb.onClick(cb => {
+							this.plugin.settings.jira_instance_urls[index].IsDefault = false;
+							this.plugin.saveSettings();
+							this.display();
+						})
+					})
+				}
+
+				s.addText((cb) => {
+					cb.setPlaceholder('Add an optional title')
+					cb.setValue(this.plugin.settings.jira_instance_urls[index].Title)
+					cb.onChange(async (value) => {
+						this.plugin.settings.jira_instance_urls[index].Title = value
+						await this.plugin.saveSettings();
+					})
+				})
+				.addText((cb) => {
+					cb.setPlaceholder('Example: https://myinstance.atlassian.net')
+					cb.setValue(this.plugin.settings.jira_instance_urls[index].Url);
+					cb.onChange(async (value) => {
+						if (value.endsWith('/')) {
+							value = value.slice(0, -1);
+						}
+						this.plugin.settings.jira_instance_urls[index].Url = value
+						await this.plugin.saveSettings();
+					})
+					cb.inputEl.classList.add("setting_jira_instance_url")
+				})
+				.addExtraButton((cb) => {
+					cb.setIcon('cross')
+						.setTooltip('delete instance')
+						.onClick(async () => {
+							this.plugin.settings.jira_instance_urls.splice(index, 1);
+							await this.plugin.saveSettings();
+							// Force refresh display
+							this.display();
+						})
+				})
+		})
+		
+		new Setting(containerEl).addButton((cb) => {
+			cb.setButtonText("Add new Jira instance")
+				.setCta()
+				.onClick(async () => {
+					this.plugin.settings.jira_instance_urls.push({
+						Title: '',
+						IsDefault: false,
+						Url: ''
+					});
+					await this.plugin.saveSettings();
+					// // Force refresh
+					this.display();
+				});
+		});
+	}
+
+	add_jira_local_issue_settings(containerEl: HTMLElement) : void {
 		new Setting(containerEl)
 			.setName('Local Issue Path')
 			.setDesc('The relative path to your issue folder')
