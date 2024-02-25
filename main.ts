@@ -14,6 +14,7 @@ const DEFAULT_SETTINGS: LocalSettings = {
 	/**
 	 * @deprecated In version 1.0.X, this only supported one url,
 	 * instead, use the jira_instance_urls array instead
+	 * Refer to deprecation-notes for more info
 	 */
 	jira_instance_url: '',
 	jira_instance_urls: [],
@@ -185,7 +186,7 @@ export default class JiraLinkerPlugin extends Plugin {
 
 	/**
 	 * Create a URL for linking to Jira web instance
-	 * @param {string} url The Jira instance
+	 * @param {string} url The Jira instance url
 	 * @param {string} jira_issue The Jira issue number (e.g.: JIRA-123)
 	 * @returns {string} A fully formed markdown Url representing a Jira with the issue as a label
 	 */
