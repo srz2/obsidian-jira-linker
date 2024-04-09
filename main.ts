@@ -144,7 +144,7 @@ export default class JiraLinkerPlugin extends Plugin {
 				}
 
 				if (content == ''){
-					new JiraIssueInputModal(this.app, (result) => {
+					new JiraIssueInputModal(this.app, this.settings.input_modal_setting.insert_newline_after_return, (result) => {
 						if (result !== ''){
 							const newStr = this.createLocalUri(local_issue_path, result, local_issue_main_file)
 							editor.replaceSelection(newStr);
@@ -176,7 +176,7 @@ export default class JiraLinkerPlugin extends Plugin {
 
 		// Check for content, ask for it if not selected
 		if (content == ''){
-			new JiraIssueInputModal(this.app, (result) => {
+			new JiraIssueInputModal(this.app, this.settings.input_modal_setting.insert_newline_after_return, (result) => {
 				if (result !== ''){
 					const newStr = this.createWebUrl(jira_url, result)
 					editor.replaceSelection(newStr);
