@@ -3,20 +3,20 @@ import { App, Modal, Setting } from "obsidian";
 export class JiraIssueInputModal extends Modal {
 	title: string;
 	description: string;
-	insert_newline_on_insert: boolean;
+	insert_newline_on_return: boolean;
 	result: string;
 	onSubmit: (result: string) => void;
 
-	constructor(app: App, insert_newline_on_insert: boolean, onSubmit: (result: string) => void) {
+	constructor(app: App, insert_newline_on_return: boolean, onSubmit: (result: string) => void) {
 		super(app);
 		this.title = 'Enter your Jira issue';
 		this.description = 'Type in a jira issue number';
-		this.insert_newline_on_insert = insert_newline_on_insert;
+		this.insert_newline_on_return = insert_newline_on_return;
 		this.onSubmit = onSubmit;
 		this.containerEl.addEventListener('keydown', (e) =>{
 			if (e.key === 'Enter') {
 				if (this.result !== undefined && this.result !== ''){
-					if (!insert_newline_on_insert){
+					if (!insert_newline_on_return){
 						e.preventDefault();
 					}
 					this.close();
