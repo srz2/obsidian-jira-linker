@@ -239,6 +239,7 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 
 		this.add_jira_instance_settings(containerEl);
 		this.add_jira_local_issue_settings(containerEl);
+		this.add_misc_settings(containerEl);
 	}
 
 	add_jira_instance_settings(containerEl : HTMLElement) {
@@ -372,5 +373,19 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 						this.plugin.settings.local_issue_info_file = value;
 						await this.plugin.saveSettings();
 					}));
+	}
+
+	add_misc_settings(containerEl: HTMLElement): void {
+
+		// New Line Insertion
+		new Setting(containerEl)
+			.setName('New Line Insertion')
+			.setDesc('Allow New Line After Pressing \'Return\' on Jira Issue Insertion')
+			.addToggle(newValue => newValue
+				.setValue(this.plugin.settings.input_modal_setting.insert_newline_after_return)
+				.onChange(async (value) => {
+					this.plugin.settings.input_modal_setting.insert_newline_after_return = value;
+					await this.plugin.saveSettings();
+				}))
 	}
 }
