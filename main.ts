@@ -8,7 +8,7 @@ interface LocalSettings {
 	jira_instance_urls: IJiraInstanceUrl[];
 	local_issue_path: string;
 	local_issue_info_file: string;
-	input_modal_setting: {
+	input_modal_settings: {
 		insert_newline_after_return: boolean;
 	}
 }
@@ -23,7 +23,7 @@ const DEFAULT_SETTINGS: LocalSettings = {
 	jira_instance_urls: [],
 	local_issue_path: '',
 	local_issue_info_file: '_Info',
-	input_modal_setting: {
+	input_modal_settings: {
 		insert_newline_after_return: true
 	}
 }
@@ -144,7 +144,7 @@ export default class JiraLinkerPlugin extends Plugin {
 				}
 
 				if (content == ''){
-					new JiraIssueInputModal(this.app, this.settings.input_modal_setting.insert_newline_after_return, (result) => {
+					new JiraIssueInputModal(this.app, this.settings.input_modal_settings.insert_newline_after_return, (result) => {
 						if (result !== ''){
 							const newStr = this.createLocalUri(local_issue_path, result, local_issue_main_file)
 							editor.replaceSelection(newStr);
@@ -176,7 +176,7 @@ export default class JiraLinkerPlugin extends Plugin {
 
 		// Check for content, ask for it if not selected
 		if (content == ''){
-			new JiraIssueInputModal(this.app, this.settings.input_modal_setting.insert_newline_after_return, (result) => {
+			new JiraIssueInputModal(this.app, this.settings.input_modal_settings.insert_newline_after_return, (result) => {
 				if (result !== ''){
 					const newStr = this.createWebUrl(jira_url, result)
 					editor.replaceSelection(newStr);
@@ -382,9 +382,9 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 			.setName('New Line Insertion')
 			.setDesc('Allow New Line After Pressing \'Return\' on Jira Issue Insertion')
 			.addToggle(newValue => newValue
-				.setValue(this.plugin.settings.input_modal_setting.insert_newline_after_return)
+				.setValue(this.plugin.settings.input_modal_settings.insert_newline_after_return)
 				.onChange(async (value) => {
-					this.plugin.settings.input_modal_setting.insert_newline_after_return = value;
+					this.plugin.settings.input_modal_settings.insert_newline_after_return = value;
 					await this.plugin.saveSettings();
 				}))
 	}
