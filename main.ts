@@ -8,6 +8,9 @@ interface LocalSettings {
 	jira_instance_urls: IJiraInstanceUrl[];
 	local_issue_path: string;
 	local_issue_info_file: string;
+	input_modal_setting: {
+		insert_newline_after_return: boolean;
+	}
 }
 
 const DEFAULT_SETTINGS: LocalSettings = {
@@ -19,7 +22,10 @@ const DEFAULT_SETTINGS: LocalSettings = {
 	jira_instance_url: '',
 	jira_instance_urls: [],
 	local_issue_path: '',
-	local_issue_info_file: '_Info'
+	local_issue_info_file: '_Info',
+	input_modal_setting: {
+		insert_newline_after_return: true
+	}
 }
 
 export default class JiraLinkerPlugin extends Plugin {
