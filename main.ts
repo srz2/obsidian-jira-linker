@@ -8,6 +8,9 @@ interface LocalSettings {
 	jira_instance_urls: IJiraInstanceUrl[];
 	local_issue_path: string;
 	local_issue_info_file: string;
+	input_modal_settings: {
+		insert_newline_after_return: boolean;
+	}
 }
 
 const DEFAULT_SETTINGS: LocalSettings = {
@@ -19,7 +22,10 @@ const DEFAULT_SETTINGS: LocalSettings = {
 	jira_instance_url: '',
 	jira_instance_urls: [],
 	local_issue_path: '',
-	local_issue_info_file: '_Info'
+	local_issue_info_file: '_Info',
+	input_modal_settings: {
+		insert_newline_after_return: true
+	}
 }
 
 export default class JiraLinkerPlugin extends Plugin {
@@ -138,7 +144,7 @@ export default class JiraLinkerPlugin extends Plugin {
 				}
 
 				if (content == ''){
-					new JiraIssueInputModal(this.app, (result) => {
+					new JiraIssueInputModal(this.app, this.settings.input_modal_settings.insert_newline_after_return, (result) => {
 						if (result !== ''){
 							const newStr = this.createLocalUri(local_issue_path, result, local_issue_main_file)
 							editor.replaceSelection(newStr);
@@ -170,7 +176,7 @@ export default class JiraLinkerPlugin extends Plugin {
 
 		// Check for content, ask for it if not selected
 		if (content == ''){
-			new JiraIssueInputModal(this.app, (result) => {
+			new JiraIssueInputModal(this.app, this.settings.input_modal_settings.insert_newline_after_return, (result) => {
 				if (result !== ''){
 					const newStr = this.createWebUrl(jira_url, result)
 					editor.replaceSelection(newStr);
@@ -233,6 +239,7 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 
 		this.add_jira_instance_settings(containerEl);
 		this.add_jira_local_issue_settings(containerEl);
+		this.add_misc_settings(containerEl);
 	}
 
 	add_jira_instance_settings(containerEl : HTMLElement) {
@@ -366,5 +373,19 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 						this.plugin.settings.local_issue_info_file = value;
 						await this.plugin.saveSettings();
 					}));
+	}
+
+	add_misc_settings(containerEl: HTMLElement): void {
+
+		// New Line Insertion
+		new Setting(containerEl)
+			.setName('New Line Insertion')
+			.setDesc('Allow New Line After Pressing \'Return\' on Jira Issue Insertion')
+			.addToggle(newValue => newValue
+				.setValue(this.plugin.settings.input_modal_settings.insert_newline_after_return)
+				.onChange(async (value) => {
+					this.plugin.settings.input_modal_settings.insert_newline_after_return = value;
+					await this.plugin.saveSettings();
+				}))
 	}
 }

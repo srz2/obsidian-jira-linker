@@ -1,7 +1,7 @@
 {
 	"id": "jira-linker",
 	"name": "Jira Linker",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"minAppVersion": "0.15.0",
 	"description": "Quickly format a Jira issue tag as a link to you Jira instance.",
 	"author": "Steven Zilberberg",
