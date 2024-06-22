@@ -10,6 +10,9 @@ interface LocalSettings {
 	local_issue_info_file: string;
 	input_modal_settings: {
 		insert_newline_after_return: boolean;
+	},
+	issue_creation_settings: {
+		create_issue_inside_project_folder: boolean	
 	}
 }
 
@@ -25,6 +28,9 @@ const DEFAULT_SETTINGS: LocalSettings = {
 	local_issue_info_file: '_Info',
 	input_modal_settings: {
 		insert_newline_after_return: true
+	},
+	issue_creation_settings: {
+		create_issue_inside_project_folder: true
 	}
 }
 
@@ -208,7 +214,13 @@ export default class JiraLinkerPlugin extends Plugin {
 	 * @returns {string} A fully formed obsidian markdown Uri for referencing an issue
 	 */
 	createLocalUri(local_path: string, jira_issue: string, main_file_name: string) : string {
-		return `[[${local_path}/${jira_issue}/${main_file_name}|${jira_issue}]]`
+		if (this.settings.issue_creation_settings.create_issue_inside_project_folder){
+			// ie - issues/123/_info
+			return `[[${local_path}/${jira_issue}/${main_file_name}|${jira_issue}]]`
+		} else {
+			// ie - issues/123_info
+			return `[[${local_path}/${jira_issue}${main_file_name}|${jira_issue}]]`
+		}
 	}
 
 	onunload() {
@@ -387,5 +399,26 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 					this.plugin.settings.input_modal_settings.insert_newline_after_return = value;
 					await this.plugin.saveSettings();
 				}))
+		
+		// Create issue inside project folder
+		const desc = document.createDocumentFragment();
+		const content = document.createElement('div')
+		content.innerHTML = `
+		<p>When linking with a local issue, a project folder with the issue name is created. Otherwise a note will be created instead the Local Issue Path</p>
+		<p><strong>With</strong> Project Folder: issue/PROJ-123/_Info</p>
+		<p><strong>Without</strong> Project Folder: issue/PROJ-123_Info</p>
+		`
+		desc.append(content)
+
+		new Setting(containerEl)
+			.setName('Create Project Folder for Local Issues')
+			.setDesc(desc)
+			.addToggle(newValue => newValue
+				.setValue(this.plugin.settings.issue_creation_settings.create_issue_inside_project_folder)
+				.onChange(async (value) => {
+					this.plugin.settings.issue_creation_settings.create_issue_inside_project_folder = value;
+					await this.plugin.saveSettings();
+				})
+			)
 	}
 }
