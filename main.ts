@@ -143,7 +143,9 @@ export default class JiraLinkerPlugin extends Plugin {
 				}
 
 				// Check local issue main file
-				if (local_issue_main_file == ''){
+				// Note: Issue Main File is optional if project folder is disabled but required if enabled
+				if (local_issue_main_file == '' && 
+					this.settings.issue_creation_settings.create_issue_inside_project_folder ){
 					const msg = 'The local issue main file has not been set in settings'
 					new Notice(msg)
 					return;
@@ -404,7 +406,7 @@ class JiraLinkerSettingTab extends PluginSettingTab {
 		const desc = document.createDocumentFragment();
 		const content = document.createElement('div')
 		content.innerHTML = `
-		<p>When linking with a local issue, a project folder with the issue name is created. Otherwise a note will be created instead the Local Issue Path</p>
+		<p>When linking with a local issue, a project folder with the issue name is created. Otherwise a note will be created instead the Local Issue Path. If disabled, "Local Issue Main File Name" becomes optional and can be left blank</p>
 		<p><strong>With</strong> Project Folder: issue/PROJ-123/_Info</p>
 		<p><strong>Without</strong> Project Folder: issue/PROJ-123_Info</p>
 		`
